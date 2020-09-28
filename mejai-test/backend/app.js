@@ -1,16 +1,24 @@
 const express = require('express');
 const app = express();
 const Mejai = require('./Mejai');
+const path = require('path');
 
-const stacks = Mejai();
+const mejai = new Mejai();
+
+app.set('view engine', 'ejs')
+app.set('views', path.join(__dirname, '../frontend2'));
 
 app.get('/', (req, res) => {
-    res.send('welcome to main page');
+    console.log('main page requested');
+    // mejai.main()
+    // .then(response => {
+    //     res.send(response)
+    // })
+    // .catch(err => {
+    //     console.log(err);
+    // })
+    res.render('../frontend2/index');
 })
-
-app.get('/mejai', (req, res) => {
-    res.send(stacks.getMatches());
-});
 
 
 app.listen(5000, () => {
