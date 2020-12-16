@@ -17,11 +17,9 @@ app.get('/', (req, res) => {
     .then(response => {
         let t1 = performance.now();
         console.log("Time: ", t1 - t0);
-        //console.log(response);
         res.render('../frontend2/index', {data: response})
     })
     .catch(error => console.log(error.message))
-    //res.render('../frontend2/index', {data: data})
 })
 
 

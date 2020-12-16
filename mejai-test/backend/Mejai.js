@@ -122,7 +122,7 @@ class Mejai {
     }
 
     async main() {
-        const matches = await this.getMatchesByID(accountID, 20);
+        const matches = await this.getMatchesByID(accountID, 10);
         this.filterMatches(matches);
         
         const stackPromises = matches.map(async match => {
@@ -134,4 +134,4 @@ class Mejai {
     }
 }
 
-module.exports = Mejai2;
+module.exports = Mejai;
