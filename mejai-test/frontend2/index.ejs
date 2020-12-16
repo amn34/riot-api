@@ -22,13 +22,14 @@
     <script>
         <% data.forEach((dataSet, i) => { %>
             var ctx = document.getElementById(`chart${<%= i %>}`).getContext('2d');  
-            var stacks = <%=  JSON.stringify(dataSet.stacks) %>            
+            var stacks = <%=  JSON.stringify(dataSet.stacks) %>    
+            var timeline = <%= JSON.stringify(dataSet.timeline) %>        
             var myChart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13'],
+                    labels: timeline,
                     datasets: [{
-                        label: '# of Votes',
+                        label: 'Timeline',
                         data: stacks,
                         backgroundColor: [
                             'rgba(255, 99, 132, 0.2)',
