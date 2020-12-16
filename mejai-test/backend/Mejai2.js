@@ -14,7 +14,7 @@ const headers = {
     }
 }
 
-class Mejai {
+class Mejai2 {
 
     async getMatchesByID(accountID, numMatches) {
         return axios.get(`https://na1.api.riotgames.com/lol/match/v4/matchlists/by-account/${accountID}`, headers)
@@ -123,6 +123,7 @@ class Mejai {
 
     async main() {
         const matches = await this.getMatchesByID(accountID, 20);
+        console.log('matches: ', matches);
         this.filterMatches(matches);
         
         const stackPromises = matches.map(async match => {
