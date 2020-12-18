@@ -1,12 +1,12 @@
 const axios = require('axios');
 const summonerName = 'w%20poseidon%20w';
-const summonerID = 'kr9yJ9GBEyZvzhtEs_Q53J5QVVddt94NFElRMNE8j_wXxnU';
-const accountID = 'nyYcx-xrknpMkEVMGTgnw_XfWWQezcmHWVHQuRghObAK1Sc';
+const summonerId = 'kr9yJ9GBEyZvzhtEs_Q53J5QVVddt94NFElRMNE8j_wXxnU';
+const accountId = 'nyYcx-xrknpMkEVMGTgnw_XfWWQezcmHWVHQuRghObAK1Sc';
 require('dotenv').config();
 
 /**item id*/
-const mejaiID = 3041;
-const darkSealID = 1082;
+const mejaiId = 3041;
+const darkSealId = 1082;
 
 const headers = {
     params: {
@@ -16,8 +16,8 @@ const headers = {
 
 class Mejai {
 
-    async getMatchesByID(accountID, numMatches) {
-        return axios.get(`https://na1.api.riotgames.com/lol/match/v4/matchlists/by-account/${accountID}`, headers)
+    async getMatchesById(accountId, numMatches) {
+        return axios.get(`https://na1.api.riotgames.com/lol/match/v4/matchlists/by-account/${accountId}`, headers)
         .then(response => {
             return response.data.matches.slice(0, numMatches);
         })
@@ -29,16 +29,16 @@ class Mejai {
     }
 
 
-    async getStacks(matchID) {        
+    async getStacks(matchId) {        
         //get the participant id
-        return axios.get(`https://na1.api.riotgames.com/lol/match/v4/matches/${matchID}`, headers)
+        return axios.get(`https://na1.api.riotgames.com/lol/match/v4/matches/${matchId}`, headers)
         .then(response => {
             const participants = response.data.participantIdentities;
-            const participantID = this.getID(participants); 
+            const participantId = this.getId(participants); 
 
-            return axios.get(`https://na1.api.riotgames.com/lol/match/v4/timelines/by-match/${matchID}`, headers)
+            return axios.get(`https://na1.api.riotgames.com/lol/match/v4/timelines/by-match/${matchId}`, headers)
             .then(response => {
-                return this.getMatchStacks(response.data.frames, participantID);
+                return this.getMatchStacks(response.data.frames, participantId, matchId);
             })
             .catch(error => console.log(error.message))
         })
@@ -46,10 +46,10 @@ class Mejai {
 
     }
 
-    getID(participants) {
+    getId(participants) {
         let id = -1;
         participants.forEach(part => {
-            if (part.player.summonerId === summonerID) {
+            if (part.player.summonerId === summonerId) {
                 id = part.participantId;
             }
         });
@@ -57,7 +57,7 @@ class Mejai {
         return id;
     }
 
-    getMatchStacks(frames, participantID) {
+    getMatchStacks(frames, participantId, matchId) {
         let currStacks = 0;
         let isStacking = false;
         let boughtMejai = false;
@@ -66,36 +66,36 @@ class Mejai {
         const timeline = [0];
         frames.forEach(frame => {
             frame.events.forEach(event => {
-                if (this.boughtItem(event, mejaiID, participantID)) {
+                if (this.boughtItem(event, mejaiId, participantId)) {
                     isStacking = true;
                     boughtMejai = true;
                 }
-                else if (this.boughtItem(event, darkSealID, participantID)) {
+                else if (this.boughtItem(event, darkSealId, participantId)) {
                     isStacking = true;
                 }
-                else if (this.soldItem(event, mejaiID, participantID)) {
+                else if (this.soldItem(event, mejaiId, participantId)) {
                     isStacking = false;
                     boughtMejai = false;
                     stacks.push(0);
                     timeline.push(frame.timestamp);
                 }
-                else if (this.soldItem(event, darkSealID, participantID)) {
+                else if (this.soldItem(event, darkSealId, participantId)) {
                     isStacking = false;
                     stacks.push(0);
                     timeline.push(frame.timestamp);
                 }
                 else if (isStacking && this.championKill(event)) {
-                    if (event.killerId == participantID) {
+                    if (event.killerId == participantId) {
                         currStacks += boughtMejai ? 4 : 2;
                         currStacks = boughtMejai ? Math.min(currStacks, 25) : Math.min(currStacks, 10);
                         stacks.push(currStacks);
                         timeline.push(frame.timestamp);
-                    } else if (event.victimId == participantID) {
+                    } else if (event.victimId == participantId) {
                         currStacks -= boughtMejai ? 10 : 4;
                         currStacks = Math.max(currStacks, 0);
                         stacks.push(currStacks);
                         timeline.push(frame.timestamp);
-                    } else if (event.assistingParticipantIds.includes(participantID)) {
+                    } else if (event.assistingParticipantIds.includes(participantId)) {
                         currStacks += boughtMejai ? 2 : 1;
                         currStacks = boughtMejai ? Math.min(currStacks, 25) : Math.min(currStacks, 10);
                         stacks.push(currStacks);
@@ -104,7 +104,7 @@ class Mejai {
                 }
             });
         });
-        return {stacks, timeline};
+        return {participantId: participantId, matchId: matchId, stacks, timeline};
     }
 
     championKill(event) {
@@ -115,22 +115,23 @@ class Mejai {
             return event.itemId == itemID;
         }
     }
-    boughtItem(event, itemID, participantID) {
-        if (event.type == 'ITEM_PURCHASED' && event.participantId == participantID) {
-            return event.itemId == itemID;
+    boughtItem(event, itemId, participantId) {
+        if (event.type == 'ITEM_PURCHASED' && event.participantId == participantId) {
+            return event.itemId == itemId;
         }
     }
 
     async main() {
-        const matches = await this.getMatchesByID(accountID, 10);
+        const matches = await this.getMatchesById(accountId, 5);
         this.filterMatches(matches);
         
-        const stackPromises = matches.map(async match => {
+        const dataPromises = matches.map(async match => {
             const stacks = await this.getStacks(match.gameId);
             return stacks;
         });
-        const stacks = await Promise.all(stackPromises);
-        return stacks;
+        let data = await Promise.all(dataPromises);
+        data = data.filter(dataset => dataset.stacks.length > 1);
+        return data;
     }
 }
 
