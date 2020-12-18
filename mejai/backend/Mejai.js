@@ -104,7 +104,7 @@ class Mejai {
                 }
             });
         });
-        return {participantId: participantId, matchId: matchId, stacks, timeline};
+        return {accountId, matchId, stacks, timeline};
     }
 
     championKill(event) {
@@ -122,7 +122,7 @@ class Mejai {
     }
 
     async main() {
-        const matches = await this.getMatchesById(accountId, 5);
+        const matches = await this.getMatchesById(accountId, 30);
         this.filterMatches(matches);
         
         const dataPromises = matches.map(async match => {
