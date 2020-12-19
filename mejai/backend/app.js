@@ -1,57 +1,51 @@
 const express = require('express')
 const app = express()
 const path = require('path')
-const Mejai = require('./Mejai')
-const mejai = new Mejai();
-const mongoose = require('mongoose')
-mongoose.connect('mongodb://localhost:27017/mejaiDB', { useNewUrlParser: true, useUnifiedTopology: true })
-    .then(() => console.log("DB Connection Open"))
-    .catch((error) => console.log("DB ERROR", error))
-
-const mejaiSchema = new mongoose.Schema({
-    accountId: String,
-    matchId: Number,
-    stacks: [Number],
-    timeline: [Number]
-})
-
-const MejaiData = mongoose.model('MejaiData', mejaiSchema)
+const MejaiLoader = require('./MejaiLoader')
+const mejaiLoader = new MejaiLoader()
+//mongodb schema for mejai data 
+const Mejai = require('./MejaiSchema')
 
 
 app.set('views', path.join(__dirname, '../frontend-ejs'));
 app.set('view engine', 'ejs');
 
-// app.get('/', (req, res) => {
-//     console.log('main page requested');
-//     mejai.main()
-//         .then(response => {
-//             console.log(response);
-//             res.render('index', { data: response })
-//         })
-//         .catch(error => console.log(error.message))
-// })
 
-app.get('/loadMatches', (req, res) => {
-    MejaiData.find()
-    .then(data => console.log(data))
+app.get('/mejai', (req, res) => {
+    console.log("---------------------------")
+    console.log("Loading Mejai Games from DB")
+    console.log("---------------------------")
+    Mejai.find({boughtMejai: true})
+    .then(results => {
+        console.log(results);
+        console.log("---------------------------")
+        console.log("Finished Loading Mejai Games from DB")
+        console.log("---------------------------")
+        res.render('index', { data: results })
+    })
 })
 
-app.get('/saveMatches', (req, res) => {
-    mejai.main()
+app.get('/stacks', (req, res) => {
+    mejaiLoader.load()
         .then(response => {
             response.forEach(dataSet => {
-                //check if the game is already in the database
-                MejaiData.find({accountId: dataSet.accountId, matchId: dataSet.matchId})
-                .then(queryResults => {
-                    if(queryResults.length == 0) {
-                        const entry = new MejaiData(dataSet)
-                        entry.save()
-                        console.log(entry);
-                    }
-                })
+                const entry = new Mejai(dataSet)
+                entry.save()
+                console.log(entry);
             })
-            res.render('index', { data: response })
+            res.send({success: true});
         })
+})
+
+app.get('/all', (req, res) => {
+    Mejai.find()
+    .then(queryResults => {
+        console.log(queryResults)
+        console.log(queryResults.length);
+    })
+    .catch(error => {
+        console.log(error);
+    })
 })
 
 

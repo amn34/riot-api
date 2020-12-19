@@ -2,6 +2,8 @@ const axios = require('axios');
 const summonerName = 'w%20poseidon%20w';
 const summonerId = 'kr9yJ9GBEyZvzhtEs_Q53J5QVVddt94NFElRMNE8j_wXxnU';
 const accountId = 'nyYcx-xrknpMkEVMGTgnw_XfWWQezcmHWVHQuRghObAK1Sc';
+const Mejai = require('./MejaiSchema')
+
 require('dotenv').config();
 
 /**item id*/
@@ -14,7 +16,7 @@ const headers = {
     }
 }
 
-class Mejai {
+class MejaiLoader {
 
     async getMatchesById(accountId, numMatches) {
         return axios.get(`https://na1.api.riotgames.com/lol/match/v4/matchlists/by-account/${accountId}`, headers)
@@ -24,8 +26,24 @@ class Mejai {
         .catch(error => console.log(error.message))
     }
 
-    filterMatches(matches) {
-        matches.filter(match => match.lane == "DUO_SUPPORT" || match.lane === "MID");
+    async filterMatches(matches) {
+        matches = matches.filter(match => match.lane == "DUO_SUPPORT" || match.lane === "MID");
+        let filteredMatches = matches.map(async match => {
+            return Mejai.find({accountId, matchId: match.gameId})
+            .then(foundMatches => {
+                if(foundMatches.length == 0) {
+                    return match
+                }
+                console.log('match already processed');
+                return
+            })
+            .catch(error => {
+                console.log('Error searching for match in DB' , error)
+            })
+        })
+        filteredMatches = await Promise.all(filteredMatches);
+        filteredMatches = filteredMatches.filter(match => match !== undefined)
+        return filteredMatches.slice(0, Math.min(10, filteredMatches.length))
     }
 
 
@@ -35,7 +53,6 @@ class Mejai {
         .then(response => {
             const participants = response.data.participantIdentities;
             const participantId = this.getId(participants); 
-
             return axios.get(`https://na1.api.riotgames.com/lol/match/v4/timelines/by-match/${matchId}`, headers)
             .then(response => {
                 return this.getMatchStacks(response.data.frames, participantId, matchId);
@@ -104,7 +121,7 @@ class Mejai {
                 }
             });
         });
-        return {accountId, matchId, stacks, timeline};
+        return {accountId, matchId, stacks, timeline, boughtMejai};
     }
 
     championKill(event) {
@@ -121,18 +138,17 @@ class Mejai {
         }
     }
 
-    async main() {
-        const matches = await this.getMatchesById(accountId, 30);
-        this.filterMatches(matches);
-        
-        const dataPromises = matches.map(async match => {
+    async load() {
+        const matches = await this.getMatchesById(accountId, 50);
+        const filteredMatches = await this.filterMatches(matches);
+        const dataPromises = filteredMatches.map(async match => {
             const stacks = await this.getStacks(match.gameId);
             return stacks;
         });
+
         let data = await Promise.all(dataPromises);
-        data = data.filter(dataset => dataset.stacks.length > 1);
         return data;
     }
 }
 
-module.exports = Mejai;
+module.exports = MejaiLoader;
