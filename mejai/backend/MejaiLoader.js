@@ -1,7 +1,11 @@
 const axios = require('axios');
-const summonerName = 'w%20poseidon%20w';
+/** w Poseidon w */
 const summonerId = 'kr9yJ9GBEyZvzhtEs_Q53J5QVVddt94NFElRMNE8j_wXxnU';
 const accountId = 'nyYcx-xrknpMkEVMGTgnw_XfWWQezcmHWVHQuRghObAK1Sc';
+/** JustNothing69 */
+// const summonerId = '7wmDX_WTATuRPxPAQKjiMERsdzpOK57nsYEHEQjB3tmXQ-4';
+// const accountId = '9tkFkk2B5sDTzore-O9Ci86oK2-NTt37qLVd51hzN9sQfaE'
+
 const Mejai = require('./MejaiSchema')
 
 require('dotenv').config();
@@ -27,7 +31,6 @@ class MejaiLoader {
     }
 
     async filterMatches(matches) {
-        matches = matches.filter(match => match.lane == "DUO_SUPPORT" || match.lane === "MID");
         let filteredMatches = matches.map(async match => {
             return Mejai.find({accountId, matchId: match.gameId})
             .then(foundMatches => {
@@ -139,7 +142,7 @@ class MejaiLoader {
     }
 
     async load() {
-        const matches = await this.getMatchesById(accountId, 50);
+        const matches = await this.getMatchesById(accountId, 30);
         const filteredMatches = await this.filterMatches(matches);
         const dataPromises = filteredMatches.map(async match => {
             const stacks = await this.getStacks(match.gameId);
