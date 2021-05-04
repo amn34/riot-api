@@ -23,6 +23,9 @@ app.get('/mejai', (req, res) => {
         console.log("---------------------------")
         res.render('index', { data: results })
     })
+    .catch(error => {
+        console.log(error.message)
+    })
 })
 
 app.get('/stacks', (req, res) => {
