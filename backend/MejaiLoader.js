@@ -1,7 +1,7 @@
 const axios = require('axios');
 /** w Poseidon w */
-const summonerId = 'kr9yJ9GBEyZvzhtEs_Q53J5QVVddt94NFElRMNE8j_wXxnU';
-const accountId = 'nyYcx-xrknpMkEVMGTgnw_XfWWQezcmHWVHQuRghObAK1Sc';
+const summonerId = '8nsampWKdkONrLek1eXtsF224I8ZewZWrYXhAxtRhlewSr4';
+const accountId = 'owzjOuR4Zi65Sh9JzYkJJ8zrJGhmJLDszgPXiBomcHjoJtI';
 /** JustNothing69 */
 // const summonerId = '7wmDX_WTATuRPxPAQKjiMERsdzpOK57nsYEHEQjB3tmXQ-4';
 // const accountId = '9tkFkk2B5sDTzore-O9Ci86oK2-NTt37qLVd51hzN9sQfaE'
@@ -22,15 +22,16 @@ const headers = {
 
 class MejaiLoader {
 
-    async getMatchesById(accountId, numMatches) {
+    async getMatchesById(accountId) {
         return axios.get(`https://na1.api.riotgames.com/lol/match/v4/matchlists/by-account/${accountId}`, headers)
         .then(response => {
-            return response.data.matches.slice(0, numMatches);
+            return response.data.matches;
         })
         .catch(error => console.log(error.message))
     }
 
     async filterMatches(matches) {
+
         let filteredMatches = matches.map(async match => {
             return Mejai.find({accountId, matchId: match.gameId})
             .then(foundMatches => {
@@ -142,7 +143,7 @@ class MejaiLoader {
     }
 
     async load() {
-        const matches = await this.getMatchesById(accountId, 30);
+        const matches = await this.getMatchesById(accountId);
         const filteredMatches = await this.filterMatches(matches);
         const dataPromises = filteredMatches.map(async match => {
             const stacks = await this.getStacks(match.gameId);

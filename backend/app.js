@@ -28,12 +28,17 @@ app.get('/mejai', (req, res) => {
 app.get('/stacks', (req, res) => {
     mejaiLoader.load()
         .then(response => {
-            response.forEach(dataSet => {
-                const entry = new Mejai(dataSet)
-                entry.save()
-                console.log(entry);
-            })
-            res.send({success: true});
+            if(response) {
+                response.forEach(dataSet => {
+                    const entry = new Mejai(dataSet)
+                    entry.save()
+                    console.log(entry)
+                })
+                res.send({success: true})
+            } else {
+                res.send({success: false})
+            }
+
         })
 })
 
