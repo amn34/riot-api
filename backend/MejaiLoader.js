@@ -2,9 +2,7 @@ const axios = require('axios');
 /** w Poseidon w */
 const summonerId = '8nsampWKdkONrLek1eXtsF224I8ZewZWrYXhAxtRhlewSr4';
 const accountId = 'owzjOuR4Zi65Sh9JzYkJJ8zrJGhmJLDszgPXiBomcHjoJtI';
-/** JustNothing69 */
-// const summonerId = '7wmDX_WTATuRPxPAQKjiMERsdzpOK57nsYEHEQjB3tmXQ-4';
-// const accountId = '9tkFkk2B5sDTzore-O9Ci86oK2-NTt37qLVd51hzN9sQfaE'
+
 
 const Mejai = require('./MejaiSchema')
 
